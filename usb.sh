@@ -70,6 +70,9 @@ open(){
 
 
 close(){
+
+    #killall gpg-agent
+
     LUKS_INFO="/tmp/$(basename $DEVICE).mounted"
 
     if [ ! -f "${LUKS_INFO}" ]; then
