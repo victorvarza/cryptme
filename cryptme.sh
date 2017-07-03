@@ -60,7 +60,7 @@ main(){
 
 help(){
     echo "Usage: $0 -a [gen_keys|list_keys|new_disk|mount_disk|umount_disk|enc_file|dec_file]
-                        gen_keys    -> generates new gpg encrypted key
+                        gen_key    -> generates new gpg encrypted key
                         list_keys   -> lists all gpg keys
                         new_disk    -> creates new disk
                         mount_disk  -> mount a disk
@@ -85,7 +85,7 @@ Expire-Date: ${GPG_KEY_EXPIRE}\n
 %commit\n
 EOF
 )
-    echo -e ${GPG_KEY_CONFIG} | gpg2 --batch --full-gen-key --homedir ${GPG_HOME_DIR}
+    echo -e ${GPG_KEY_CONFIG} | ${GPG2} --batch --full-gen-key --homedir ${GPG_HOME_DIR}
 }
 
 list_keys(){

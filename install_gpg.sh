@@ -10,7 +10,7 @@ export CPPFLAGS="-I${APP_FOLDER}/include"
 export LDFLAGS="-L${APP_FOLDER}/lib/"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${APP_FOLDER}/lib"
 export LIBRARY_PATH="${LIBRARY_PATH}:${APP_FOLDER}/lib"
-export CPATH="${CPATH}:${APP_FOLDER}/include"
+export CPATH="${CPATH}:${APP_FOLDER}/include/:${APP_FOLDER}/include/gpgme++:${APP_FOLDER}/include/ncurses"
 export PATH="${PATH}:${APP_FOLDER}/bin"
 
 
@@ -93,7 +93,7 @@ make
 make install
 cd ../
 
-cd ncurses-${NCURSES}
+cd ncurses-${NCU    RSES}
 ./configure --prefix=$APP_FOLDER
 make
 make install
