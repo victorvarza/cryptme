@@ -5,7 +5,12 @@
 # Author:       Victor Ionel Varza (victor.varza@gmail.com)
 
 # global vars
-GPG_HOME_DIR="/tmp/dumps" # dumps = my gpg keys ;)
+
+GPG_ROOT="/tmp/dumps"
+GPG_HOME_DIR="${GPG_ROOT}/gpg_home" # dumps = my gpg keys ;)
+GPG2="${GPG_ROOT}/gnupg2/bin/gpg2"
+
+
 GPG_USER_ID=$USER
 GPG_KEY_TYPE="RSA"
 GPG_KEY_LENGTH="4096"
@@ -13,16 +18,18 @@ GPG_KEY_EXPIRE="0"
 
 DISK_MOUNT_POINT="/mnt/data/"
 DISK_SIZE="4096" #4GB
-DISK_METADATA="${GPG_HOME_DIR}/disks_metadata"
+DISK_METADATA="${GPG_ROOT}/disks"
 
 FILE_PATH="/mnt/data"
 
+
 main(){
-    set -e
 
     [[ $# -lt 1 ]] && help;
 
     option="${@}"
+
+  #  [[ ! -z "${LD_LIBRARY_PATH}" ]] && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GPG_ROOT}/nupg2/lib"
 
     # Parse options
     while getopts "a:d:u:s:" option; do
@@ -82,7 +89,7 @@ EOF
 }
 
 list_keys(){
-    gpg2 --list-keys --homedir $GPG_HOME_DIR
+    ${GPG2} --list-keys --homedir $GPG_HOME_DIR
 }
 
 new_disk(){
@@ -107,7 +114,7 @@ new_disk(){
 
     # generate disk encryption key for luks
     sudo rngd -r /dev/urandom
-    dd if=/dev/random bs=1K count=1 | gpg2 --homedir ${GPG_HOME_DIR} --encrypt --output ${DISK_LUKS_KEY}
+    dd if=/dev/random bs=1K count=1 | ${GPG2} --homedir ${GPG_HOME_DIR} --encrypt --output ${DISK_LUKS_KEY}
 
     LOOPBACK_DEVICE=$(sudo losetup -f)
     LUKS_MOUNT=$(head -c8 /dev/random | sha256sum | head -c 8)
@@ -118,7 +125,7 @@ new_disk(){
     sudo losetup ${LOOPBACK_DEVICE}
 
     #format the new disk
-    KEY=$(gpg2 --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
+    KEY=$(${GPG2} --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
     echo $KEY | sudo cryptsetup luksFormat $LOOPBACK_DEVICE -
     echo $KEY | sudo cryptsetup luksOpen $LOOPBACK_DEVICE $LUKS_MOUNT -d -
     sudo mkfs.ext4 /dev/mapper/$LUKS_MOUNT
@@ -153,7 +160,7 @@ mount_disk(){
     LUKS_MOUNT=$(head -c8 /dev/random | sha256sum | head -c 8)
 
     sudo losetup $LOOPBACK_DEVICE "${DISK_PATH}"
-    KEY=$(gpg2 --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
+    KEY=$(${GPG2} --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
     echo $KEY | sudo cryptsetup luksOpen $LOOPBACK_DEVICE $LUKS_MOUNT -d -
     sudo mount /dev/mapper/$LUKS_MOUNT "${DISK_MOUNT_POINT}"
 
@@ -201,7 +208,7 @@ dec_file(){
     fi
 
     mount -t ramfs -o size=128M tmpfs "${RAMFS}"
-    gpg2 --homedir ${GPG_HOME_DIR} --decrypt --output "${DEC_FILE}" "${ENC_FILE}"
+    ${GPG2} --homedir ${GPG_HOME_DIR} --decrypt --output "${DEC_FILE}" "${ENC_FILE}"
 }
 
 dec_file(){
@@ -213,7 +220,7 @@ dec_file(){
         exit 1
     fi
 
-    gpg2 --homedir ${GPG_HOME_DIR} --encrypt --output "${ENC_FILE}" "${DEC_FILE}"
+    ${GPG2} --homedir ${GPG_HOME_DIR} --encrypt --output "${ENC_FILE}" "${DEC_FILE}"
 
    if [ "$(md5sum ${DEC_FILE})"=="md5sum $(gpg2 --homedir ${GPG_HOME_DIR} --decrypt --output "${DEC_FILE}" "${ENC_FILE}")" ]; then
         rm -f "${DEC_FILE}"
