@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 
 # Summary:      Generates keys, encrypted disks, encrypted files
-# Usage:        to be added;
+# Usage:        ./cryptme.sh -a new_hdd -d custo_path_to_disk_file
 # Author:       Victor Ionel Varza (victor.varza@gmail.com)
 
 # global vars
 
-GPG_ROOT="/tmp/dumps"
-GPG_HOME_DIR="${GPG_ROOT}/gpg_home" # dumps = my gpg keys ;)
-GPG2="${GPG_ROOT}/gnupg2/bin/gpg2"
-
+GPG_HOME_DIR="/tmp/dumps/gpg_home" # dumps = my gpg keys ;)
+GPG2_PATH="/opt/gnupg2"
+GPG2="${GPG2_PATH}/bin/gpg2"
 
 GPG_USER_ID=$USER
 GPG_KEY_TYPE="RSA"
@@ -29,7 +28,9 @@ main(){
 
     option="${@}"
 
-  #  [[ ! -z "${LD_LIBRARY_PATH}" ]] && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GPG_ROOT}/nupg2/lib"
+    if [ "${GPG2}" != "/usr/bin/gpg2" ] && [ -z "${LD_LIBRARY_PATH}" ]; then
+        export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GPG2_PATH}/lib"
+    fi
 
     # Parse options
     while getopts "a:d:u:s:" option; do

@@ -4,7 +4,7 @@
 
 CD=$(pwd)
 DOWNLOAD_FOLDER="${HOME}/Downloads/gpg-install"
-APP_FOLDER="/tmp/dumps/gnupg2"
+APP_FOLDER="/opt/gnupg2"
 
 export CPPFLAGS="-I${APP_FOLDER}/include"
 export LDFLAGS="-L${APP_FOLDER}/lib/"
@@ -117,7 +117,7 @@ make
 make install
 cd ../
 
-echo "$APP_FOLDER/lib" > /etc/ld.so.conf.d/gpg2.conf
+#echo "$APP_FOLDER/lib" > /etc/ld.so.conf.d/gpg2.conf
 ldconfig -v
 
 cd $CD
