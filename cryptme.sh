@@ -6,7 +6,8 @@
 
 # global vars
 
-GPG_HOME_DIR="/tmp/dumps/gpg_home" # dumps = my gpg keys ;)
+GPG_ROOT="/tmp/dumps"
+GPG_HOME_DIR="${GPG_ROOT}/gpg_home" # dumps = my gpg keys ;)
 GPG2_PATH="/opt/gnupg2"
 GPG2="${GPG2_PATH}/bin/gpg2"
 
@@ -16,10 +17,12 @@ GPG_KEY_LENGTH="4096"
 GPG_KEY_EXPIRE="0"
 
 DISK_MOUNT_POINT="/mnt/data/"
-DISK_SIZE="4096" #4GB
+DISK_SIZE="5120" #5GB
 DISK_METADATA="${GPG_ROOT}/disks"
 
 FILE_PATH="/mnt/data"
+
+LUKS_OPTIONS="--cipher aes-xts-plain64 --key-size 512 --hash  sha512  --iter-time 5000 --use-random --verify-passphrase"
 
 
 main(){
@@ -114,6 +117,7 @@ new_disk(){
     fi
 
     # generate disk encryption key for luks
+    echo "Generating luks encryption key."
     sudo rngd -r /dev/urandom
     dd if=/dev/random bs=1K count=1 | ${GPG2} --homedir ${GPG_HOME_DIR} --encrypt --output ${DISK_LUKS_KEY}
 
@@ -121,13 +125,24 @@ new_disk(){
     LUKS_MOUNT=$(head -c8 /dev/random | sha256sum | head -c 8)
 
     # Create DISK file container
+    echo "Creating disk file of ${DISK_SIZE}MB"
     dd if=/dev/zero of=${DISK_PATH} bs=1M count=${DISK_SIZE}
     sudo losetup $LOOPBACK_DEVICE "${DISK_PATH}"
     sudo losetup ${LOOPBACK_DEVICE}
 
     #format the new disk
+    echo "Decrypting luks key"
     KEY=$(${GPG2} --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
-    echo $KEY | sudo cryptsetup luksFormat $LOOPBACK_DEVICE -
+
+    if [ $? -ne 0 ]; then
+        echo "LUKS key decryption failed. Please try again."
+        rm -f ${DISK_LUKS_KEY}
+        rm -f ${DISK_PATH}
+        exit 1
+    fi
+
+    echo "Mounting and formating disk file."
+    echo $KEY | sudo cryptsetup luksFormat $LUKS_OPTIONS $LOOPBACK_DEVICE -
     echo $KEY | sudo cryptsetup luksOpen $LOOPBACK_DEVICE $LUKS_MOUNT -d -
     sudo mkfs.ext4 /dev/mapper/$LUKS_MOUNT
 }

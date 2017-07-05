@@ -93,7 +93,7 @@ make
 make install
 cd ../
 
-cd ncurses-${NCU    RSES}
+cd ncurses-${NCURSES}
 ./configure --prefix=$APP_FOLDER
 make
 make install

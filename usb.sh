@@ -3,6 +3,7 @@
 
 DEVICE="N/A"
 MOUNT_POINT="/tmp/dumps"
+LUKS_OPTIONS="--cipher aes-xts-plain64 --key-size 512 --hash  sha512  --iter-time 5000 --use-random --verify-passphrase"
 
 
 main(){
@@ -40,7 +41,7 @@ help(){
 
 
 format(){
-    sudo cryptsetup --cipher aes-xts-plain64 --key-size 512 --hash  sha512  --iter-time 5000 --use-random --verify-passphrase luksFormat ${DEVICE}
+    sudo cryptsetup $LUKS_OPTIONS luksFormat ${DEVICE}
     # c - set the cipher specification
     # s - set the key size in bits
     # h - specifies the passphrase hash for open
