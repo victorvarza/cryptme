@@ -63,13 +63,15 @@ main(){
 }
 
 help(){
-    echo "Usage: $0 -a [gen_keys|list_keys|new_disk|mount_disk|umount_disk|enc_file|dec_file]
-                        gen_key    -> generates new gpg encrypted key
-                        list_keys   -> lists all gpg keys
-                        new_disk    -> creates new disk
-                        mount_disk  -> mount a disk
-                        enc_file    -> encrypt a file
-                        dec_file    -> decrypt file into ramfs"
+    echo "Usage: $0 -a [ actions ] -d /path/to/disk/file
+
+actions could be:
+       gen_key     -> generates new gpg encrypted key
+       list_keys   -> lists all gpg keys
+       new_disk    -> creates new disk
+       mount_disk  -> mount a disk
+       enc_file    -> encrypt a file
+       dec_file    -> decrypt file into ramfs"
     exit 1
 }
 
