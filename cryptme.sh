@@ -169,15 +169,22 @@ mount_disk(){
         exit 1
     fi
 
-    mkdir "${DISK_MOUNT_POINT}"
+    KEY=$(${GPG2} --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
+
+    if [ $? -ne 0 ]; then
+        echo "Cannot unlock disk key"
+        exit 1
+    fi
 
     LOOPBACK_DEVICE=$(sudo losetup -f)
     sudo rngd -r /dev/urandom
     LUKS_MOUNT=$(head -c8 /dev/random | sha256sum | head -c 8)
-
     sudo losetup $LOOPBACK_DEVICE "${DISK_PATH}"
-    KEY=$(${GPG2} --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
+
     echo $KEY | sudo cryptsetup luksOpen $LOOPBACK_DEVICE $LUKS_MOUNT -d -
+
+
+    mkdir "${DISK_MOUNT_POINT}"
     sudo mount /dev/mapper/$LUKS_MOUNT "${DISK_MOUNT_POINT}"
 
     echo "$LOOPBACK_DEVICE;$LUKS_MOUNT;$DISK_MOUNT_POINT" > "/tmp/$DISK_NAME.mounted"
