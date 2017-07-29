@@ -42,21 +42,21 @@ main(){
             d)  DISK_PATH="${OPTARG}"       ;;
             f)  FILE_PATH="${OPTARG}"       ;;
             u)  GPG_USER_ID="${OPTARG}"     ;;
-            s)  DISK_SIZE="${OPTARG}"     ;;
+            s)  DISK_SIZE="${OPTARG}"       ;;
             h)  help                        ;;
             *)	help                        ;;
         esac
     done
 
     case "$action" in
-        gen_key)     gen_key                   ;;
-        list_keys)	 list_keys                  ;;
-        new_disk)	 new_disk       $DISK_PATH  ;;
-        mount_disk)  mount_disk     $DISK_PATH  ;;
-        umount_disk) unmount_disk   $DISK_PATH  ;;
-        enc_file)    mount_disk     $FILE_PATH  ;;
-        dec_file)    dec_file       $FILE_PATH  ;;
-        *)	         help                       ;;
+        gen_key)   gen_key                    ;;
+        list_keys) list_keys                  ;;
+        new_disk)  new_disk       $DISK_PATH  ;;
+        open)  	   mount_disk     $DISK_PATH  ;;
+        close) 	   unmount_disk   $DISK_PATH  ;;
+        enc_file)  mount_disk     $FILE_PATH  ;;
+        dec_file)  dec_file       $FILE_PATH  ;;
+        *)	   help                       ;;
     esac
 
     sudo -k
@@ -69,7 +69,8 @@ actions could be:
        gen_key     -> generates new gpg encrypted key
        list_keys   -> lists all gpg keys
        new_disk    -> creates new disk
-       mount_disk  -> mount a disk
+       open  	   -> open and mount a disk
+       close       -> unmount and close a disk
        enc_file    -> encrypt a file
        dec_file    -> decrypt file into ramfs"
     exit 1
