@@ -42,34 +42,37 @@ main(){
             d)  DISK_PATH="${OPTARG}"       ;;
             f)  FILE_PATH="${OPTARG}"       ;;
             u)  GPG_USER_ID="${OPTARG}"     ;;
-            s)  DISK_SIZE="${OPTARG}"     ;;
+            s)  DISK_SIZE="${OPTARG}"       ;;
             h)  help                        ;;
             *)	help                        ;;
         esac
     done
 
     case "$action" in
-        gen_key)     gen_key                   ;;
-        list_keys)	 list_keys                  ;;
-        new_disk)	 new_disk       $DISK_PATH  ;;
-        mount_disk)  mount_disk     $DISK_PATH  ;;
-        umount_disk) unmount_disk   $DISK_PATH  ;;
-        enc_file)    mount_disk     $FILE_PATH  ;;
-        dec_file)    dec_file       $FILE_PATH  ;;
-        *)	         help                       ;;
+        gen_key)   gen_key                    ;;
+        list_keys) list_keys                  ;;
+        new_disk)  new_disk       $DISK_PATH  ;;
+        open)  	   mount_disk     $DISK_PATH  ;;
+        close) 	   unmount_disk   $DISK_PATH  ;;
+        enc_file)  mount_disk     $FILE_PATH  ;;
+        dec_file)  dec_file       $FILE_PATH  ;;
+        *)	   help                       ;;
     esac
 
     sudo -k
 }
 
 help(){
-    echo "Usage: $0 -a [gen_keys|list_keys|new_disk|mount_disk|umount_disk|enc_file|dec_file]
-                        gen_key    -> generates new gpg encrypted key
-                        list_keys   -> lists all gpg keys
-                        new_disk    -> creates new disk
-                        mount_disk  -> mount a disk
-                        enc_file    -> encrypt a file
-                        dec_file    -> decrypt file into ramfs"
+    echo "Usage: $0 -a [ actions ] -d /path/to/disk/file
+
+actions could be:
+       gen_key     -> generates new gpg encrypted key
+       list_keys   -> lists all gpg keys
+       new_disk    -> creates new disk
+       open  	   -> open and mount a disk
+       close       -> unmount and close a disk
+       enc_file    -> encrypt a file
+       dec_file    -> decrypt file into ramfs"
     exit 1
 }
 
@@ -169,15 +172,22 @@ mount_disk(){
         exit 1
     fi
 
-    mkdir "${DISK_MOUNT_POINT}"
+    KEY=$(${GPG2} --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
+
+    if [ $? -ne 0 ]; then
+        echo "Cannot unlock disk key"
+        exit 1
+    fi
 
     LOOPBACK_DEVICE=$(sudo losetup -f)
     sudo rngd -r /dev/urandom
     LUKS_MOUNT=$(head -c8 /dev/random | sha256sum | head -c 8)
-
     sudo losetup $LOOPBACK_DEVICE "${DISK_PATH}"
-    KEY=$(${GPG2} --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
+
     echo $KEY | sudo cryptsetup luksOpen $LOOPBACK_DEVICE $LUKS_MOUNT -d -
+
+
+    mkdir "${DISK_MOUNT_POINT}"
     sudo mount /dev/mapper/$LUKS_MOUNT "${DISK_MOUNT_POINT}"
 
     echo "$LOOPBACK_DEVICE;$LUKS_MOUNT;$DISK_MOUNT_POINT" > "/tmp/$DISK_NAME.mounted"
