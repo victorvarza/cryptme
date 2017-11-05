@@ -8,7 +8,7 @@
 
 GPG_ROOT="/tmp/dumps"
 GPG_HOME_DIR="${GPG_ROOT}/gpg_home" # dumps = my gpg keys ;)
-GPG2_PATH="/opt/gnupg2"
+GPG2_PATH="/usr/"
 GPG2="${GPG2_PATH}/bin/gpg2"
 
 GPG_USER_ID=$USER
