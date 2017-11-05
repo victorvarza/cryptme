@@ -35,7 +35,7 @@ main(){
 
 
 help(){
-    echo "Usage: $0 -a [format|open] -d /dev/sd[x]"
+    echo "Usage: $0 -a [format|open|close] -d /dev/sd[x]"
     exit 1
 }
 
@@ -72,7 +72,7 @@ open(){
 
 close(){
 
-    #killall gpg-agent
+    killall gpg-agent > /dev/null 2>&1
 
     LUKS_INFO="/tmp/$(basename $DEVICE).mounted"
 

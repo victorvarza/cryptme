@@ -92,6 +92,8 @@ Expire-Date: ${GPG_KEY_EXPIRE}\n
 %commit\n
 EOF
 )
+    echo $GPG_KEY_CONFIG
+    echo "test"
     echo -e ${GPG_KEY_CONFIG} | ${GPG2} --batch --full-gen-key --homedir ${GPG_HOME_DIR}
 }
 
@@ -122,7 +124,7 @@ new_disk(){
     # generate disk encryption key for luks
     echo "Generating luks encryption key."
     sudo rngd -r /dev/urandom
-    dd if=/dev/random bs=1K count=1 | ${GPG2} --homedir ${GPG_HOME_DIR} --encrypt --output ${DISK_LUKS_KEY}
+    dd if=/dev/random bs=1K count=1 | ${GPG2} --homedir ${GPG_HOME_DIR} --recipient ${GPG_USER_ID} --encrypt --output ${DISK_LUKS_KEY}
 
     LOOPBACK_DEVICE=$(sudo losetup -f)
     LUKS_MOUNT=$(head -c8 /dev/random | sha256sum | head -c 8)
@@ -135,7 +137,7 @@ new_disk(){
 
     #format the new disk
     echo "Decrypting luks key"
-    KEY=$(${GPG2} --homedir ${GPG_HOME_DIR} --decrypt ${DISK_LUKS_KEY})
+    KEY=$(${GPG2} --homedir ${GPG_HOME_DIR}  --decrypt ${DISK_LUKS_KEY})
 
     if [ $? -ne 0 ]; then
         echo "LUKS key decryption failed. Please try again."
