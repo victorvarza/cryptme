@@ -63,7 +63,7 @@ main(){
 }
 
 help(){
-    echo "Usage: $0 -a [ actions ] -d /path/to/disk/file
+    echo "Usage: $0 -a [ actions ] -d /path/to/disk/file [-s size MB] [-u gpg_user_id]
 
 actions could be:
        gen_key     -> generates new gpg encrypted key
